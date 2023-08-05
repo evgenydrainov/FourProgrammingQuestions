@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <math.h>
+#include <string.h>
 
 // Question #1: Rectangle Copy
 static void CopyRect(char *BufferA, int PitchA, char *BufferB, int PitchB,
@@ -86,14 +88,56 @@ static int ContainsColor_3(unsigned char pixel, unsigned char color) {
 }
 
 // Question #4: Outlining A Circle
-static void Plot(int X, int Y);
+#include "sine_table.h"
 
-static void OutlineCircle(int Cx, int Cy, int R)
-{
-	
+const int screen_w = 50;
+const int screen_h = 50;
+char screen[screen_w * screen_h];
+
+static void Plot(int x, int y) {
+	if (x < 0 || x >= screen_w || y < 0 || y >= screen_h) {
+		return;
+	}
+
+	screen[x + y * screen_w] = '#';
+}
+
+static void OutlineCircle_1(int x, int y, int radius) {
+	for (int dir = 0; dir < 360; dir++) {
+		int xx = x + radius * cosf(dir / 180.0f * 3.14159f);
+		int yy = y - radius * sinf(dir / 180.0f * 3.14159f);
+		Plot(xx, yy);
+	}
+}
+
+static void OutlineCircle_2(int x, int y, int radius) {
+	for (int dir = 0; dir < 360; dir++) {
+		int xx = x + radius * cosine[dir] / 10000;
+		int yy = y - radius * sine[dir] / 10000;
+		Plot(xx, yy);
+	}
 }
 
 int main(int argc, char* argv[]) {
+	/* generate sine table
+	printf("static const int sine[360] = {\n");
+	for (int a = 0; a < 360; a++) {
+		float pi = 3.1415926535897932384626433832795;
+		int sine = sinf(a / 180.0f * pi) * 10000.0f;
+		printf("%d,\n", sine);
+	}
+	printf("};\n\n");
+
+	printf("static const int cosine[360] = {\n");
+	for (int a = 0; a < 360; a++) {
+		float pi = 3.1415926535897932384626433832795;
+		int cosine = cosf(a / 180.0f * pi) * 10000.0f;
+		printf("%d,\n", cosine);
+	}
+	printf("};");
+	return 0;
+	//*/
+
 	// Question #1
 	{
 	
@@ -134,11 +178,26 @@ int main(int argc, char* argv[]) {
 		printf("  11110111 contains 01: %d (1)\n", ContainsColor_3(0b11110111, 0b01));
 		printf("  00100000 contains 10: %d (1)\n", ContainsColor_3(0b00100000, 0b10));
 		printf("  11101111 contains 10: %d (1)\n", ContainsColor_3(0b11101111, 0b10));
+
+		printf("\n");
 	}
 
 	// Question #4
 	{
-	
+		printf("Question #4\n");
+
+		memset(screen, ' ', sizeof(screen));
+
+		OutlineCircle_2(25, 25, 20);
+
+		for (int y = 0; y < screen_h; y++) {
+			for (int x = 0; x < screen_w; x++) {
+				putchar(screen[x + y * screen_w]);
+			}
+			putchar('\n');
+		}
+
+		printf("\n");
 	}
 
 	return 0;
